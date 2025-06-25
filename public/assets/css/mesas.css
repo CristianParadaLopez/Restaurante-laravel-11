@@ -1,0 +1,11 @@
+.border-disponible {
+    border: 2px solid green;
+}
+
+.border-ocupada {
+    border: 2px solid red;
+}
+
+.border-reservada {
+    border: 2px solid yellow;
+}

@@ -1,0 +1,38 @@
+/* public/css/theme.css */
+
+/* Modo claro */
+body.light-mode {
+    background-color: #ffffff !important;
+    color: #000000 !important; 
+}
+
+/* Modo oscuro */
+body.dark-mode  {
+    background-color: #121212 !important;
+    color: #ffffff !important;
+}
+.dark-mode {
+    background-color: #121212; /* Color de fondo oscuro */
+    color: white; /* Color de texto claro */
+}
+
+#theme-icon {
+    font-size: 1.8em; /* Tamaño del ícono */
+    transition: transform 0.3s; /* Transición suave al cambiar el ícono */
+}
+
+/* Estilo para el ícono cuando se hace hover */
+.theme-button:hover #theme-icon {
+    transform: scale(1.2); /* Aumenta el tamaño un poco al pasar el ratón */
+}
+.theme-button {
+
+
+    font-size: 1.0em; /* Tamaño del ícono */
+    
+}
+#theme-toggle {
+    background: #9c49fb;
+   border-radius: 5px;
+   
+}

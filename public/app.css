@@ -1,0 +1,7 @@
+a {
+    color: inherit;        /* Toma el color del texto circundante */
+    text-decoration: none; /* Elimina el subrayado */
+}
+a:hover {
+    color: #ff6600; /* Cambia este color a tu preferencia */
+}
