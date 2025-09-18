@@ -23,19 +23,16 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip sodium
 
-# Composer
+# Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Node.js para assets
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get update && apt-get install -y nodejs
 
-# Habilita mod_rewrite y configura Apache para Laravel
+# Configura Apache para servir desde public/ y habilita mod_rewrite
 RUN a2enmod rewrite \
-    && sed -i "s/AllowOverride None/AllowOverride All/g" /etc/apache2/apache2.conf \
-    && sed -i "s|/var/www/html|/var/www/html/public|g" /etc/apache2/sites-available/000-default.conf \
-    && sed -i "s|/var/www/html|/var/www/html/public|g" /etc/apache2/apache2.conf \
-    && sed -i "s/80/8080/g" /etc/apache2/ports.conf
+    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 # Establece directorio de trabajo
 WORKDIR /var/www/html
@@ -43,15 +40,15 @@ WORKDIR /var/www/html
 # Copia la aplicación
 COPY . .
 
-# Ajusta permisos de Laravel
+# Ajusta permisos
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Instala dependencias PHP y Node
+# Instala dependencias de PHP y Node
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 
-# Expone el puerto que Railway usa
+# Expone el puerto usado por Railway
 EXPOSE 8080
 
-# CMD para iniciar Apache en primer plano
+# Inicia Apache en primer plano
 CMD ["apache2-foreground"]
