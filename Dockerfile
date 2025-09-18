@@ -24,5 +24,11 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 # Exponer puerto 80
 EXPOSE 80
 
+# Configurar Apache para servir Laravel desde /var/www/public
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && sed -i 's|/var/www/html|/var/www/public|g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's|/var/www/html|/var/www/public|g' /etc/apache2/apache2.conf
+
+
 # Comando de inicio (Apache con Laravel en public/)
 CMD ["apache2-foreground"]
