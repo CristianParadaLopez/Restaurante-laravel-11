@@ -47,6 +47,8 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 
+# Compilar los assets de Laravel con Vite
+RUN npm run build
 # Expone el puerto usado por Railway
 EXPOSE 8080
 
