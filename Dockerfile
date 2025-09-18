@@ -1,7 +1,7 @@
-# Usar PHP 8.2 con Apache
+# Usa PHP con Apache
 FROM php:8.2-apache
 
-# Instalar dependencias necesarias y extensiones PHP
+# Instala dependencias necesarias
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -13,38 +13,40 @@ RUN apt-get update && apt-get install -y \
     libsodium-dev \
     libpq-dev \
     default-mysql-client \
+    default-libmysqlclient-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_pgsql pdo_mysql mbstring exif pcntl bcmath gd zip sodium \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip sodium
 
-# Copiar Composer desde la imagen oficial
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar Node.js (para npm)
+# Node.js para assets
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get update && apt-get install -y nodejs \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get update && apt-get install -y nodejs
 
-# Establecer el directorio de trabajo
+# Configura Apache para servir desde public/
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/apache2.conf \
+    && sed -i "s/80/8080/g" /etc/apache2/ports.conf \
+    && a2enmod rewrite
+
+# Establece el directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar la aplicación
+# Copia la aplicación
 COPY . .
 
-# Instalar dependencias de PHP y Node
+# Ajusta permisos
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Instala dependencias de PHP y Node
 RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 
-# Ajustar permisos de Laravel
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Expone el puerto que Railway usa
+EXPOSE 8080
 
-# Configurar Apache para servir Laravel desde /public
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-
-# Exponer puerto 80 (el puerto que usa Apache)
-EXPOSE 80
-
-# Arrancar Apache en primer plano
-CMD ["apache2-foreground"]
+# CMD para iniciar Laravel
+CMD php artisan migrate --force && php artisan db:seed --force && apache2-foreground
