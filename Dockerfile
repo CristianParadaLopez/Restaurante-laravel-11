@@ -1,9 +1,24 @@
 FROM php:8.2-apache
 
-# Instalar dependencias necesarias
+# Evitamos que apt pregunte durante la instalación
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalar dependencias necesarias y extensiones de PHP
 RUN apt-get update && apt-get install -y \
-    libzip-dev unzip git curl libicu-dev \
-    && docker-php-ext-install pdo pdo_mysql zip intl bcmath mbstring
+    libzip-dev \
+    unzip \
+    git \
+    curl \
+    libicu-dev \
+    libonig-dev \
+    && docker-php-ext-install -j$(nproc) \
+        pdo \
+        pdo_mysql \
+        zip \
+        intl \
+        bcmath \
+        mbstring \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
