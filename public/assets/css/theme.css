@@ -1,38 +1,83 @@
 /* public/css/theme.css */
 
-/* Modo claro */
-body.light-mode {
-    background-color: #ffffff !important;
-    color: #000000 !important; 
-}
-
-/* Modo oscuro */
-body.dark-mode  {
-    background-color: #121212 !important;
-    color: #ffffff !important;
-}
-.dark-mode {
-    background-color: #121212; /* Color de fondo oscuro */
-    color: white; /* Color de texto claro */
-}
-
+/* ===== Theme Icon ===== */
 #theme-icon {
-    font-size: 1.8em; /* Tamaño del ícono */
-    transition: transform 0.3s; /* Transición suave al cambiar el ícono */
+  font-size: 16px;
+  transition: transform 0.3s ease;
+  pointer-events: none;
 }
 
-/* Estilo para el ícono cuando se hace hover */
-.theme-button:hover #theme-icon {
-    transform: scale(1.2); /* Aumenta el tamaño un poco al pasar el ratón */
+/* ===== Light Mode (default) ===== */
+body {
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
-.theme-button {
 
-
-    font-size: 1.0em; /* Tamaño del ícono */
-    
+body.light-mode {
+  background-color: #ffffff;
+  color: #1a1a1a;
 }
-#theme-toggle {
-    /* background: #9c49fb; */
-   border-radius: 5px;
-   
+
+/* ===== Dark Mode ===== */
+body.dark-mode {
+  background-color: #0e0e0e;
+  color: #e8e8e8;
+}
+
+/* Navbar en dark mode ya está oscuro por defecto — sin cambios necesarios */
+
+/* Secciones blancas → oscuras */
+body.dark-mode section,
+body.dark-mode .section {
+  background-color: #0e0e0e;
+}
+
+/* Cards en dark mode */
+body.dark-mode .menu-card .info {
+  background: rgba(0,0,0,0.75);
+}
+
+body.dark-mode .chef-card {
+  background: #1a1a1a;
+}
+
+body.dark-mode .chef-card .info {
+  background: #1a1a1a;
+  border-top-color: rgba(198,161,91,0.2);
+}
+
+/* Texto */
+body.dark-mode .about-description {
+  color: rgba(255,255,255,0.72);
+}
+
+body.dark-mode .section-heading h2 {
+  color: #ffffff;
+}
+
+body.dark-mode p {
+  color: rgba(255,255,255,0.75);
+}
+
+/* Offers tab items */
+body.dark-mode #offers .tabs-content .tab-item {
+  background: #1c1c1c;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+body.dark-mode #offers .tabs-content h4 {
+  color: #ffffff;
+}
+
+body.dark-mode #offers .tabs-content p {
+  color: rgba(255,255,255,0.65);
+}
+
+/* HR dividers */
+body.dark-mode hr {
+  border-top-color: rgba(198,161,91,0.25);
+}
+
+/* Footer copyright text */
+body.dark-mode .footer-copy p {
+  color: rgba(255,255,255,0.5);
 }
