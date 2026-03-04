@@ -153,7 +153,7 @@ https://templatemo.com/tm-558-klassy-cafe
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($data as $item)
+                        @foreach ($foods as $item)
                             <tr>
                                 <td>
                                     <input type="text" name="foodname[]" value="{{ $item->title }}" hidden>

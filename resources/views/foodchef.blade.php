@@ -1,40 +1,41 @@
-    <!-- ***** Chefs Area Starts ***** -->
-    <section class="section" id="chefs">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 offset-lg-4 text-center">
-                    <div class="section-heading">
-                        <h6>Nuestros Chefs</h6>
-                        <h2>Ellos ofrecen los mejores ingredientes para ti</h2>
-                    </div>
-                </div>
-            </div>
-            
-                
-           
-            <div class="row">
-                @foreach ($data2 as $data2)
-                <div class="col-lg-4">
-                    <div class="chef-item">
-                        <div class="thumb">
-                            <div class="overlay"></div>
-                            <ul class="social-icons">
-                                <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                <li><a href="#"><i class="fa fa-instagram"></i></a></li>
-                            </ul>
-                            <img height="200" width="200" src="chefs/{{$data2->image}}" alt="Chef #1">
-                        </div>
-                        <div class="down-content">
-                            <h4>{{$data2->first_name}}</h4>
-                            <span>{{$data2->specialty}}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                @endforeach      
-            </div>
-            
+<!-- ***** Chefs Area Starts ***** -->
+<section class="section" id="chefs">
+  <div class="container">
+
+    <!-- Encabezado -->
+    <div class="row justify-content-center text-center mb-5">
+      <div class="col-lg-8">
+        <div class="section-heading">
+          <h6>Nuestros Chefs</h6>
+          <h2>Ellos ofrecen los mejores ingredientes para ti</h2>
         </div>
-    </section>
-    <!-- ***** Chefs Area Ends ***** -->
+      </div>
+    </div>
+
+    <!-- Grid de chefs -->
+    <div class="row g-4">
+      @foreach ($foods as $chef)
+      <div class="col-md-6 col-lg-4">
+        <div class="chef-card">
+          <div class="thumb">
+            <img src="chefs/{{$chef->image}}" alt="{{ $chef->first_name }}">
+            <div class="overlay">
+              <ul class="social-icons">
+                <li><a href="#"><i class="fa fa-facebook-f"></i></a></li>
+                <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="info">
+            <h4>{{ $chef->first_name }}</h4>
+            <span>{{ $chef->specialty }}</span>
+          </div>
+        </div>
+      </div>
+      @endforeach
+    </div>
+
+  </div>
+</section>
+<!-- ***** Chefs Area Ends ***** -->

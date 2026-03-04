@@ -1,11 +1,11 @@
-<x-app-layout></x-app-layout>
+<!-- <x-app-layout></x-app-layout> -->
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     @include("admin.admincss")
     <style>
-        .form-container {
+       .form-container {
             margin: 20px;
             padding: 15px;
             border: 2px solid #9c49fb;
@@ -84,6 +84,54 @@
             color: rgb(255, 255, 255) !important;  
             opacity: 1;
         }
+
+        /* Modal único */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%;
+            border-radius: 8px;
+            background-color: #fff;
+            color: #000;
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content button {
+            background: #9c49fb;
+            color: white;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+        }
+
+        .modal-content button:hover {
+            background-color: #218838;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -91,11 +139,12 @@
         @include("admin.navbar")
 
         <div class="contenedor">
-            <!-- Formulario para agregar un nuevo platillo (horizontal) -->
+            <!-- Formulario para agregar nueva comida -->
             <div class="form-container">
                 <h3>Agregar Nueva Comida</h3>
-                <form action="{{ url('/uploadfood') }}" method="post" enctype="multipart/form-data">
+                <form action="{{ route('admin.foods.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    
                     <div class="row">
                         <div class="col-md-3">
                             <input type="text" name="title" class="form-control" placeholder="Título" required>
@@ -147,7 +196,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Nombre de la Comida</th>
+                            <th>Nombre</th>
                             <th>Precio</th>
                             <th>Descripción</th>
                             <th>Imagen</th>
@@ -160,31 +209,93 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($data as $food)
+                        @foreach ($foods as $food)
                         <tr>
                             <td>{{ $food->title }}</td>
                             <td>${{ $food->price }}</td>
                             <td>{{ $food->description }}</td>
-                            <td>
-                                <img src="/foodimage/{{ $food->image }}" alt="{{ $food->title }}" style="width: 100px; height: auto;">
-                            </td>
+                            <td><img src="{{ asset('storage/' . $food->image) }}" alt="{{ $food->title }}" style="width:100px;"></td>
                             <td>{{ $food->ingredients }}</td>
                             <td>{{ $food->proteins }}</td>
                             <td>{{ $food->calories }}</td>
                             <td>{{ $food->size }}</td>
-                            <td>{{ $food->category->name }}</td> <!-- Mostrar categoría -->
+                            <td>{{ $food->category->name }}</td>
                             <td>
-                                <a href="{{ url('/updateview', $food->id) }}" class="btn btn-edit">Editar</a>
-                                <a href="{{ url('/deletemenu', $food->id) }}" class="btn btn-delete" onclick="return confirm('¿Estás seguro de eliminar este ítem?')">Eliminar</a>
+                                <button class="btn btn-edit" onclick='openModal(@json($food))'>Editar</button>
+                                <form action="{{ route('admin.foods.destroy', $food->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-delete" onclick="return confirm('¿Estás seguro de eliminar este ítem?')">Eliminar</button>
+                                </form>
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+                {{ $foods->links() }} <!-- Paginación -->
             </div>
         </div>
     </div>
 
+    <!-- Modal único para editar -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <form id="editForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="text" name="title" id="title" placeholder="Título" required>
+                <input type="number" name="price" id="price" placeholder="Precio" step="0.01" required>
+                <input type="text" name="description" id="description" placeholder="Descripción" required>
+                <input type="text" name="ingredients" id="ingredients" placeholder="Ingredientes">
+                <input type="text" name="proteins" id="proteins" placeholder="Proteínas">
+                <input type="number" name="calories" id="calories" placeholder="Calorías">
+                <select name="size" id="size">
+                    <option value="Pequeño">Pequeño</option>
+                    <option value="Mediano">Mediano</option>
+                    <option value="Grande">Grande</option>
+                </select>
+                <select name="category_id" id="category_id" required>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                <p>Imagen actual:</p>
+                <img id="currentImage" src="" style="width:100px;">
+                <p>Nueva imagen:</p>
+                <input type="file" name="image">
+                <button type="submit">Guardar cambios</button>
+            </form>
+        </div>
+    </div>
+
     @include("admin.adminscript")
+    <script>
+        function openModal(food) {
+            document.getElementById('editModal').style.display = 'block';
+            document.getElementById('modalTitle').innerText = 'Editar ' + food.title;
+            document.getElementById('editForm').action = '/admin/foods/' + food.id;
+            document.getElementById('title').value = food.title;
+            document.getElementById('price').value = food.price;
+            document.getElementById('description').value = food.description;
+            document.getElementById('ingredients').value = food.ingredients;
+            document.getElementById('proteins').value = food.proteins;
+            document.getElementById('calories').value = food.calories;
+            document.getElementById('size').value = food.size;
+            document.getElementById('category_id').value = food.category_id;
+            document.getElementById('currentImage').src = '/storage//' + food.image; 
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Click fuera del modal para cerrarlo
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) modal.style.display = 'none';
+        }
+    </script>
 </body>
 </html>

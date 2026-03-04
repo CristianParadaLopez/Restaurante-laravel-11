@@ -79,49 +79,49 @@
   <div class="container-scroller">
     @include("admin.navbar")
     <div class="form-container">
-      <form action="{{ url('/update', $data->id) }}" method="post" enctype="multipart/form-data">
+      <form action="{{ url('/update', $food->id) }}" method="post" enctype="multipart/form-data">
         @csrf
 
         <!-- Título -->
         <div class="form-row">
           <label>Título</label>
-          <input style="background: #9c49fb; color: white" type="text" name="title" value="{{ $data->title }}" required>
+          <input style="background: #9c49fb; color: white" type="text" name="title" value="{{ $food->title }}" required>
         </div>
 
         <!-- Precio -->
         <div class="form-row">
           <label>Precio</label>
-          <input style="background: #9c49fb; color: white" type="number" name="price" value="{{ $data->price }}" step="0.01" required>
+          <input style="background: #9c49fb; color: white" type="number" name="price" value="{{ $food->price }}" step="0.01" required>
         </div>
 
         <!-- Descripción -->
         <div class="form-row">
           <label>Descripción</label>
-          <input style="background: #9c49fb; color: white" type="text" name="description" value="{{ $data->description }}" required>
+          <input style="background: #9c49fb; color: white" type="text" name="description" value="{{ $food->description }}" required>
         </div>
 
         <!-- Ingredientes -->
         <div class="form-row">
           <label>Ingredientes</label>
-          <input style="background: #9c49fb; color: white" type="text" name="ingredients" value="{{ $data->ingredients }}">
+          <input style="background: #9c49fb; color: white" type="text" name="ingredients" value="{{ $food->ingredients }}">
         </div>
 
         <!-- Proteínas -->
         <div class="form-row">
           <label>Proteínas</label>
-          <input style="background: #9c49fb; color: white" type="text" name="proteins" value="{{ $data->proteins }}">
+          <input style="background: #9c49fb; color: white" type="text" name="proteins" value="{{ $food->proteins }}">
         </div>
 
         <!-- Calorías -->
         <div class="form-row">
           <label>Calorías</label>
-          <input style="background: #9c49fb; color: white" type="number" name="calories" value="{{ $data->calories }}">
+          <input style="background: #9c49fb; color: white" type="number" name="calories" value="{{ $food->calories }}">
         </div>
 
         <!-- Tamaño -->
         <div class="form-row">
           <label>Tamaño</label>
-          <input style="background: #9c49fb; color: white" type="text" name="size" value="{{ $data->size }}">
+          <input style="background: #9c49fb; color: white" type="text" name="size" value="{{ $food->size }}">
         </div>
 
         <!-- Categoría -->
@@ -130,7 +130,7 @@
           <select name="category_id" style="background: #9c49fb; color: white">
             <option value="">Seleccione una categoría</option>
             @foreach ($categories as $category)
-              <option value="{{ $category->id }}" {{ $data->category_id == $category->id ? 'selected' : '' }}>
+              <option value="{{ $category->id }}" {{ $food->category_id == $category->id ? 'selected' : '' }}>
                 {{ $category->name }}
               </option>
             @endforeach
@@ -140,7 +140,7 @@
         <!-- Imagen actual -->
         <div class="form-row">
           <label>Imagen actual</label>
-          <img src="/foodimage/{{ $data->image }}" alt="Imagen actual">
+          <img src="/foodimage/{{ $food->image }}" alt="Imagen actual">
         </div>
 
         <!-- Nueva imagen -->

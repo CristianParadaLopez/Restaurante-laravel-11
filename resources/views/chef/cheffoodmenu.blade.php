@@ -160,13 +160,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($data as $food)
+                        @foreach ($foods as $food)
                         <tr>
                             <td>{{ $food->title }}</td>
                             <td>${{ $food->price }}</td>
                             <td>{{ $food->description }}</td>
                             <td>
-                                <img src="/foodimage/{{ $food->image }}" alt="{{ $food->title }}" style="width: 100px; height: auto;">
+                                <img src="{{ asset('storage/' . $food->image) }}"alt="{{ $food->title }}" style="width: 100px; height: auto;">
                             </td>
                             <td>{{ $food->ingredients }}</td>
                             <td>{{ $food->proteins }}</td>

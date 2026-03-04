@@ -10419,13 +10419,13 @@ textarea.is-invalid.tt-hint {
 .dropdown-menu.show {
   display: block; }
 
-.dropdown-header {
+/* .dropdown-header {
   display: block;
   padding: 0.5rem 1rem;
   margin-bottom: 0;
   font-size: 0.875rem;
   color: #ffffff;
-  white-space: nowrap; }
+  white-space: nowrap; } */
 
 .dropdown-item-text {
   display: block;

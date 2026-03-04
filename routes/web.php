@@ -1,147 +1,133 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ChefController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\FoodController as AdminFoodController;
+use App\Http\Controllers\Admin\TableController as AdminTableController;
+use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ChefController as AdminChefController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+
+use App\Http\Controllers\Chef\FoodController as ChefFoodController;
+use App\Http\Controllers\Chef\ProfileController as ChefProfileController;
+
+use App\Http\Controllers\Mesero\DashboardController as MeseroDashboardController;
+use App\Http\Controllers\Mesero\TableController as MeseroTableController;
+use App\Http\Controllers\Mesero\ReservationController as MeseroReservationController;
+
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MeseroController;
-use App\Http\Controllers\TableController;
 use Illuminate\Support\Facades\Route;
 
-Route::get("/",[HomeController::class,"index"]);
-//Ruta para direccionar a los administradores y usuarios
-Route::get("/redirects",[HomeController::class,"redirects"]);
-
-//VISTAS COMIDAS
-//ruta para seleccionar las comidas:
+/*
+|--------------------------------------------------------------------------
+| RUTAS PÚBLICAS / HOME
+|--------------------------------------------------------------------------
+*/
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/redirects', [HomeController::class, 'redirects'])->middleware('auth')->name('redirects');
 Route::get('/comidaview', [HomeController::class, 'comidaview'])->name('comidaview');
-Route::get('/menu', [HomeController::class, 'menu'])->name('menu');
-Route::get('/infocomida/{id}', [HomeController::class, 'infocomida'])->name('infocomida');
+Route::get('/menu', [HomeController::class, 'comidaview'])->name('menu');
+Route::get('/infocomida/{food}', [HomeController::class, 'infocomida'])->name('infocomida');
 
+/*
+|--------------------------------------------------------------------------
+| RUTAS AUTH (CARRITO + ORDENES)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/{food}', [CartController::class, 'store'])->name('cart.store');
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-// Ruta para mostrar la lista de usuarios
-Route::get("/users", [AdminController::class, "user"])->name('admin.user');
+    Route::post('/orderconfirm', [HomeController::class, 'orderConfirm'])->name('order.confirm');
+});
 
-// Ruta para eliminar un usuario
-Route::delete("/deleteuser/{id}",[AdminController::class,"deleteuser"]);
+/*
+|--------------------------------------------------------------------------
+| RUTAS ADMIN PANEL UNIFICADO
+|--------------------------------------------------------------------------
+| Aquí todos los roles que pueden acceder al panel: admin, chef, mesero
+| Usamos RoleMiddleware mejorado que soporta múltiples roles
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->name('admin.')
+    ->middleware(['auth','role:admin,chef,mesero'])
+    ->group(function () {
 
-// Ruta para mostrar el formulario de editar usuario y la acción de actualización
-Route::post("/updateUser/{id}", [AdminController::class, "updateUser"])->name('updateUser');  // Para actualizar usuario
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-// Ruta para mostrar el formulario de crear usuario y la acción de creación
-Route::post("/storeUser", [AdminController::class, "createUser"])->name('storeUser');  // Para crear usuario
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN: Usuarios (solo admin)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('users', AdminUserController::class)->except(['show'])->names('users');
+        Route::resource('chefs', AdminChefController::class)->names('chefs');
+    });
 
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN / CHEF: Menus de comida
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin,chef')->group(function () {
+        Route::resource('foods', AdminFoodController::class)->names('foods');
+    });
 
+    /*
+    |--------------------------------------------------------------------------
+    | MESERO / ADMIN: Mesas
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin,mesero')->group(function () {
+        Route::resource('tables', AdminTableController::class)->names('tables');
+        Route::post('tables/{table}/mark-as-used', [AdminTableController::class, 'markAsUsed'])->name('tables.markAsUsed');
+    });
 
-//Ruta para ver los menus
-Route::get("/foodmenu",[AdminController::class,"foodmenu"]);
-//Ruta para ingresar datos al menu
-Route::post("/uploadfood",[AdminController::class,"uploadfood"]);
-//Ruta para eliminar los menus
-Route::get("/deletemenu/{id}",[AdminController::class,"deletemenu"]);
-//Ruta para editar los menus
-Route::get("/updateview/{id}",[AdminController::class,"updateview"]);
-Route::post("/update/{id}",[AdminController::class,"update"]);
-Route::get('/foodmenu', [AdminController::class, 'foodmenu'])->name('foodmenu');
-//cOMIDA
-Route::get('/infocomida/{id}', [HomeController::class, 'infocomida'])->name('infocomida');
+    /*
+    |--------------------------------------------------------------------------
+    | MESERO / ADMIN: Reservaciones
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin,mesero')->group(function () {
+        Route::get('reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
+        Route::post('reservations/{reservation}/assign-table', [AdminReservationController::class, 'assignTable'])->name('reservations.assignTable');
+        Route::delete('reservations/{reservation}', [AdminReservationController::class, 'destroy'])->name('reservations.destroy');
+    });
 
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN: Ordenes
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin')->group(function () {
+        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    });
 
-//Ruta para hacer la reservación
-Route::post("/reservation",[AdminController::class,"reservation"]);
-Route::get("/viewreservation",[AdminController::class,"viewreservation"]);
+    /*
+    |--------------------------------------------------------------------------
+    | CHEF: Perfil propio
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin,chef')->group(function () {
+        Route::get('profile', [AdminProfileController::class, 'index'])->name('profile.index');
+        Route::post('profile', [AdminProfileController::class, 'store'])->name('profile.store');
+        Route::get('profile/edit', [AdminProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
+        Route::delete('profile', [AdminProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+});
 
-//Ruta para ver a los cefs
-Route::get("/viewchef",[AdminController::class,"viewchef"]);
-//Ruta para ingresar datos de los chefs
-Route::post("/uploadchef",[AdminController::class,"uploadchef"]);
-//Ruta para editar los chefs
-Route::put("/updatechef/{id}",[AdminController::class,"updatechef"]);
-Route::post("/updatefoodchef/{id}",[AdminController::class,"updatefoodchef"]);
-//Ruta para eliminar los chefs
-Route::delete("/deletechef/{id}",[AdminController::class,"deletechef"]);
-//Ruta para eliminar los chefs
-Route::post("/addcart/{id}",[HomeController::class,"addcart"]);
-
-//Ruta para mostrar el carrito
-Route::get("/showcart/{id}",[HomeController::class,"showcart"]);
-//Ruta para eliminar item del carrito
-Route::get("/remove/{id}",[HomeController::class,"remove"]);
-//Ruta para enviar la orden 
-Route::post("/orderconfirm",[HomeController::class,"orderconfirm"]);
-//Ruta para ver las ordenes 
-Route::get("/orders",[AdminController::class,"orders"]);
-
-//Ruta para el buscador
-Route::get("/search",[AdminController::class,"search"]);
-
-
-//nUEVO
-Route::get('/reservations', [AdminController::class, 'viewreservation'])->name('reservations');
-// Route::post('/reservations/{reservation}/assign-table', [AdminController::class, 'assignTable'])->name('assign.table');
-Route::post('/reservations/{reservationId}/assign-table', [AdminController::class, 'assignTable']);
-
-Route::get('/adminmesas', [AdminController::class, 'viewTables'])->name('adminmesas');
-
-// Ruta para almacenar una nueva mesa
-Route::post('/adminmesas', [AdminController::class, 'storeTable']);
-
-// Ruta para actualizar una mesa (desde el modal)
-Route::put('/adminmesas/{id}', [AdminController::class, 'updateTable'])->name('adminmesasupdate');
-
-// Ruta para eliminar una mesa
-Route::delete('/adminmesas/{id}', [AdminController::class, 'deleteTable'])->name('adminmesasdelete');
-
-Route::put('/adminmesas/{id}', [TableController::class, 'update'])->name('adminmesasupdate');
-
-//ruta para marcarla mesa que se utilizo
-Route::post('/tables/{id}/mark-as-used', [TableController::class, 'markAsUsed']);
-
-
-//RUTA DE CHEFS:
-// Rutas de perfil de chef
-Route::get('/chefprofile', [ChefController::class, 'showProfile'])->name('chef.profile');
-Route::post('/chefprofile/store', [ChefController::class, 'storeProfile'])->name('chef.profile.store');
-Route::get('/chefprofile/edit', [ChefController::class, 'updateProfile'])->name('chef.profile.edit');
-//Rutas de comida chef
-Route::get("/cheffoodmenu", [ChefController::class, "cheffoodmenu"]);
-//Ruta para ingresar datos al menu
-Route::post("/uploadfoodchef",[ChefController::class,"uploadfoodchef"]);
-//Ruta para eliminar los menus
-Route::get("/chefdeletemenu/{id}",[ChefController::class,"chefdeletemenu"]);
-//Ruta para editar los menus
-Route::get("/chefupdateview/{id}",[ChefController::class,"chefupdateview"]);
-Route::post("/updatechef/{id}",[ChefController::class,"updatechef"]);
-Route::get('/cheffoodmenu', [ChefController::class, 'cheffoodmenu'])->name('cheffoodmenu');
-
-
-//RUTAS DE MESEROS
-//ruta para ver las mesas
-Route::get('/meserohome', [HomeController::class, 'redirects'])->name('meserohome');
-
-Route::get('/meseromesas', [MeseroController::class, 'viewTables'])->name('meseromesas');
-
-// Ruta para almacenar una nueva mesa
-Route::post('/meseromesas', [MeseroController::class, 'storeTable']);
-
-// Ruta para actualizar una mesa (desde el modal)
-Route::put('/meseromesas/{id}', [MeseroController::class, 'updateTable'])->name('meseromesasupdate');
-
-// Ruta para eliminar una mesa
-Route::delete('/meseromesas/{id}', [MeseroController::class, 'deleteTable'])->name('meseromesasdelete');
-
-Route::post('/update-table-status', [HomeController::class, 'updateStatus'])->name('updateTableStatus');
-Route::get('meseroreservation', [MeseroController::class, 'meseroviewreservation'])->name('meseroreservation');
-
-
-Route::put('/meseromesas/{id}', [TableController::class, 'update'])->name('meseromesasupdate');
-
-//ruta para marcarla mesa que se utilizo
-Route::post('/tables/{id}/mark-as-used', [TableController::class, 'markAsUsed']);
-
-
-
-
-
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD JETSTREAM / SANCTUM
+|--------------------------------------------------------------------------
+*/
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -151,6 +137,3 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 });
-
-
-

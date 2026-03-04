@@ -5,137 +5,209 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Chef;
 use App\Models\Food;
-use App\Models\User;
-use App\Models\Foodchef;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Foodchef;
+use App\Models\Category;
 use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    public function index(){
+    /**
+     * Página pública principal con paginación y categorías.
+     */
+    public function index()
+    {
+        // Paginamos para evitar cargar todo en memoria
+        $foods = Food::with('category')->latest()->paginate(12);
+        $chefs = Chef::all();
+        $user = Auth::user();
+        $count = $user ? Cart::where('user_id', $user->id)->count() : 0;
+        $categories = Category::withCount('foods')->get();
 
-        $data=Food::all();
-        $data2=Chef::all();
-        $user_i=Auth::id();
-        $user_id=Auth::id();
-        $count=cart::where('user_id',$user_id)->count();
-   
-        return view("home",compact("data","data2","count"));
+        return view('home', compact('foods','chefs','count','categories'));
     }
-    //Funcion para redireccionar la vista del administrado a la de un usuario normal
+
+    /**
+     * Redirección después del login según rol/usertype.
+     * Usa hasRole() si Spatie está configurado, sino usa usertype.
+     */
     public function redirects(Request $request)
-{
-    $data = Food::all();
-    $data2 = Foodchef::all();
-    $usertype = Auth::user()->usertype;
-    $tables = Table::all();
-    $table = Table::all();
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return redirect()->route('home');
+        }
 
-    $viewOption = $request->get('viewOption', 'area');
-
-    if ($usertype == 'admin') {
-        return view('admin.adminhome');
-    } elseif ($usertype == 'chef') {
-        
-        return view('chef.chefhome', compact('data', 'data2',)); // Vista para chef
-    } elseif ($usertype == 'mesero') {
-        $user_id = Auth::id();
-        $count = Cart::where('user_id', $user_id)->count();
-        return view('mesero.meserohome', compact('data', 'data2', 'count','tables','viewOption','table')); // Vista para mesero
-    }else {
-        return redirect('/'); // Redirección para roles no reconocidos
+        // Preferir Spatie roles si existe el método
+        if (method_exists($user, 'hasRole')) {
+    if ($user->hasAnyRole(['admin','chef','mesero'])) {
+        return redirect()->route('admin.dashboard');
     }
 }
-    public function addcart(Request $request,$id){
-        if(Auth::id()){
-            $user_id=Auth::id();
-            $foodid=$id;
-            $quantity=$request->quantity;
-
-            $cart=new Cart;
-            $cart->user_id=$user_id;
-            $cart->food_id=$foodid;
-            $cart->quantity=$quantity;
-            $cart->save();
-           
-            return redirect()->back();
-        }else{
-            return redirect('/login');
+        // Fallback a usertype column
+        switch ($user->usertype ?? null) {
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+            case 'chef':
+                return redirect()->route('chef.dashboard');
+            case 'mesero':
+                return redirect()->route('mesero.dashboard');
+            default:
+                return redirect()->route('home');
         }
     }
-    //Funcion para ver los productos del carrito
-    public function showcart(Request $request, $id){
-        $count=Cart::where('user_id',$id)->count();
-        $data2=Cart::select('*')->where('user_id','=',$id)->get();
 
-        $data=Cart::where('user_id',$id)->join('food','carts.food_id','=','food.id')->get();
-        
-        return view('showcart',compact('count','data','data2'));
-    }
-
-    //Funcion para eliminar el carrito
-    public function remove($id){
-        $data=Cart::find($id);
-        $data->delete();
-        return redirect()->back();
-    }
-
-    public function orderconfirm(Request $request)
+    /**
+     * Vista de menú completo (pública).
+     */
+    public function comidaview()
     {
-        foreach($request->foodname as $key=>$foodname){
+        $foods = Food::with('category')->paginate(24);
+        $user = Auth::user();
+        $count = $user ? Cart::where('user_id', $user->id)->count() : 0;
 
-        }
-        $data=new Order();
-        $data->foodname=$foodname;
-        $data->price=$request->price[$key];
-        $data->quantity=$request->quantity[$key];
-        $data->name=$request->name;
-        $data->phone=$request->phone;
-        $data->address=$request->address;
-    
-        $data->save();
-        return redirect()->back();
-        
+        return view('comidaview', compact('foods','count'));
     }
-    public function updateStatus(Request $request)
-{
-    $table = Table::find($request->id);
-    
-    if ($table) {
-        // Actualizar el estado de la mesa
-        $table->status = $request->status;
-        $table->save();
 
-        // Redirigir de vuelta con un mensaje de éxito
+    /**
+     * Información de una comida (route-model binding).
+     */
+    public function infocomida(Food $food)
+    {
+        return view('infocomida', compact('food'));
+    }
+
+    /**
+     * Actualizar estado de mesa (ej.: disponible, reservada, ocupada).
+     * Se asume que la ruta está protegida por middleware (mesero/admin).
+     */
+    public function updateStatus(Request $request, Table $table)
+    {
+        $data = $request->validate([
+            'status' => 'required|string|in:disponible,reservada,ocupada'
+        ]);
+
+        $table->update(['status' => $data['status']]);
+
         return redirect()->back()->with('success', 'Estado de la mesa actualizado correctamente.');
     }
 
-    // Redirigir en caso de que no se haya encontrado la mesa
-    return redirect()->back()->with('error', 'No se pudo encontrar la mesa.');
-}
-public function comidaview()
-{
-    // Obtén todos los alimentos
-    $foods = Food::all();
-    $user_id = Auth::id();
-    $count = Cart::where('user_id', $user_id)->count();
+    /**
+     * Confirmar orden: crea Order + OrderItems en transacción.
+     *
+     * Formato esperado (recomendado):
+     * items: [
+     *   { food_id: 1, quantity: 2 },
+     *   { food_id: 3, quantity: 1 },
+     * ]
+     *
+     * También aceptamos el formato legacy (foodname[] + price[] + quantity[])
+     */
+    public function orderConfirm(Request $request)
+    {
+        // Primero validamos campos comunes
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:40',
+            'address' => 'nullable|string',
+        ]);
 
-    // Retorna la vista 'comidaview' con todas las comidas
-    return view('comidaview', compact('foods', 'count'));
-}
+        $user = Auth::user();
 
-// Controlador actualizado
+        // Two possible payloads: 'items' structured or legacy arrays
+        $items = $request->input('items');
 
-public function infocomida($id)
-{
-    // Obtén la comida específica por ID
-    $food = Food::findOrFail($id);
-    // Retorna la vista con los detalles de la comida
-    return view('infocomida', compact('food'));
-}
+        // Normalize items
+        $normalized = [];
 
+        if (is_array($items) && count($items) > 0) {
+            // validate each item
+            foreach ($items as $i => $it) {
+                $validated = \Validator::make($it, [
+                    'food_id' => 'required|exists:foods,id',
+                    'quantity' => 'required|integer|min:1',
+                ])->validate();
 
+                $food = Food::find($validated['food_id']);
+                $normalized[] = [
+                    'food_id' => $food->id,
+                    'title' => $food->title,
+                    'price' => $food->price,
+                    'quantity' => (int)$validated['quantity'],
+                    'subtotal' => $food->price * (int)$validated['quantity'],
+                ];
+            }
+        } else if ($request->has('foodname') && is_array($request->foodname)) {
+            // legacy handling (arrays)
+            $names = $request->foodname;
+            $prices = $request->price ?? [];
+            $qtys = $request->quantity ?? [];
+
+            foreach ($names as $k => $name) {
+                $price = isset($prices[$k]) ? floatval($prices[$k]) : 0;
+                $qty = isset($qtys[$k]) ? intval($qtys[$k]) : 1;
+                $normalized[] = [
+                    'food_id' => null,
+                    'title' => $name,
+                    'price' => $price,
+                    'quantity' => $qty,
+                    'subtotal' => $price * $qty,
+                ];
+            }
+        } else {
+            return redirect()->back()->with('error', 'No se enviaron items para la orden.');
+        }
+
+        // Crear Order + OrderItems en transacción
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'user_id' => $user ? $user->id : null,
+                'customer_name' => $request->name,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'total' => 0,
+                'status' => 'pending',
+            ]);
+
+            $total = 0;
+            foreach ($normalized as $it) {
+                // Si existe food_id lo guardamos, sino guardamos title/price/texto
+                $orderItem = $order->items()->create([
+                    'food_id' => $it['food_id'] ?? null,
+                    'title'   => $it['title'],
+                    'price'   => $it['price'],
+                    'quantity'=> $it['quantity'],
+                    'subtotal'=> $it['subtotal'],
+                ]);
+                $total += $it['subtotal'];
+            }
+
+            $order->update(['total' => $total]);
+
+            // Si el usuario autenticado tenía items en cart, eliminar los correspondientes
+            if ($user) {
+                $cartQuery = Cart::where('user_id', $user->id);
+                // Si food_ids are available, delete those; otherwise empty cart
+                $foodIds = array_filter(array_column($normalized, 'food_id'));
+                if (count($foodIds) > 0) {
+                    $cartQuery->whereIn('food_id', $foodIds)->delete();
+                } else {
+                    // legacy: delete all for simplicity (or customize)
+                    $cartQuery->delete();
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('home')->with('success', 'Orden creada correctamente. ID: ' . $order->id);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            // log error en producción (Log::error($e))
+            return redirect()->back()->with('error', 'No se pudo procesar la orden. Intente de nuevo.');
+        }
+    }
 }

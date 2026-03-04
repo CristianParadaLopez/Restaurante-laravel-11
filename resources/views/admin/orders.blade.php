@@ -149,15 +149,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($data as $data)
+                    @foreach ($orders as $order)
                     <tr>
-                        <td>{{$data->name}}</td>
-                        <td>{{$data->phone}}</td>
-                        <td>{{$data->address}}</td>
-                        <td>{{$data->foodname}}</td>
-                        <td>${{$data->price}}</td>
-                        <td>{{$data->quantity}}</td>
-                        <td>${{$data->price * $data->quantity}}</td>
+                        <td>{{$order->name}}</td>
+                        <td>{{$order->phone}}</td>
+                        <td>{{$order->address}}</td>
+                        <td>{{$order->foodname}}</td>
+                        <td>${{$order->price}}</td>
+                        <td>{{$order->quantity}}</td>
+                        <td>${{$order->price * $order->quantity}}</td>
                         <td>
                             <a href="{{url('/deleteorder', $data->id)}}" class="btn-action btn-delete">Borrar</a>
                         </td>

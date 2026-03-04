@@ -29,7 +29,7 @@ https://templatemo.com/tm-558-klassy-cafe
     <link rel="stylesheet" href="assets/css/owl-carousel.css">
 
     <link rel="stylesheet" href="assets/css/theme.css">
-    <link rel="stylesheet" href="asset/css/app.css">
+    <!-- <link rel="stylesheet" href="asset/css/app.css"> -->
     <link rel="stylesheet" href="assets/css/lightbox.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -50,92 +50,76 @@ https://templatemo.com/tm-558-klassy-cafe
     
     
     <!-- ***** Header Area Start ***** -->
-    
-    <header class="header-area header-sticky">
-        
-        <div class="container">
-            <div class="row">
-                <div class="col-14">
-                    <nav class="main-nav d-flex justify-content-between " style="margin-right: -10px;">
-                        <!-- ***** Logo Start ***** -->
-                        <a href="@auth {{ url('/redirects') }} @else {{ url('/') }} @endauth" class="logo">
-                            <img src="assets/images/logo.png"  height="100" width="100" style="margin-left: 0;">
-                        </a>
-                        <!-- ***** Logo End ***** -->
-                        <!-- ***** Menu Start ***** -->
-                        <ul class="nav d-flex align-items-center">
-                            
-                            <li class="scroll-to-section"><a href="#top" class="active">Hogar</a></li>
-                            <li class="scroll-to-section"><a href="#about">nosotros</a></li>
-                           	
-                        <!-- 
-                            <li class="submenu">
-                                <a href="javascript:;">Drop Down</a>
-                                <ul>
-                                    <li><a href="#">Drop Down Page 1</a></li>
-                                    <li><a href="#">Drop Down Page 2</a></li>
-                                    <li><a href="#">Drop Down Page 3</a></li>
-                                </ul>
-                            </li>
-                        -->
-                            <li class="scroll-to-section"><a href="#menu">Menus</a></li>
-                            <li class="scroll-to-section"><a href="#chefs">Chefs</a></li> 
-                            
-                            
-                            <!-- <li class=""><a rel="sponsored" href="https://templatemo.com" target="_blank">External URL</a></li> -->
-                            <li class="scroll-to-section"><a href="#reservation">Contactanos</a></li> 
-                            
-                            <li class="scroll-to-section" >
-                                @auth
-                                <a href="{{url('/showcart',Auth::user()->id)}}">
-                                Carrito{{$count}}
-                                </a>
-                                @endauth
+<header class="luxury-header fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-dark px-4 py-3">
+    <div class="container-fluid">
 
+      <!-- Logo -->
+      <a href="@auth {{ url('/redirects') }} @else {{ url('/') }} @endauth" class="navbar-brand d-flex align-items-center">
+        <img src="assets/images/logo.png" alt="Dalezius" class="logo-img me-2">
+        <span class="brand-name">Dalezius</span>
+      </a>
 
-                                @guest
-                                    Carrrito
-                                @endguest
-                            </a></li>
-                            
-                            <li>
-                                @if (Route::has('login'))
-                                <div class="sm:fixed sm:top-0 sm:right-0  text-right ">
-                                    @auth
-                                        <li><x-app-layout></x-app-layout></li>
-                                    @else
-                                        <li><a href="{{ route('login') }}" class="font-semibold text-gray-600 hover:text-gray-900">Iniciar Sesión</a></li>
-                                        @if (Route::has('register'))
-                                            <li><a href="{{ route('register') }}" class="ml-4 font-semibold text-gray-600 hover:text-gray-900">Registrarse</a></li>
-                                        @endif
-                                    @endauth
-                                </div>
-                                
-                            @endif
+      <!-- Botón toggle (modo móvil) -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-                            </li>
-                            <li  class="scroll-to-section" style="margin-left: 20px; margin-top: 40px;">
-                                <button id="theme-toggle" class="theme-button">
-                                    <i id="theme-icon" class="fas fa-moon"></i> <!-- Ícono inicial de luna -->
-                                </button>
-                            </li>
-                            
-                            
-                            
-                        </ul>        
-                        <a class='menu-trigger'>
-                            <span></span>
-                        </a>
-                        
-                        <!-- ***** Menu End ***** -->
-                        
-                    </nav>
-                </div>
-            </div>
-            
-        </div>
-    </header>
-    <!-- ***** Header Area End ***** -->
+      <!-- Menú -->
+      <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+        <ul class="navbar-nav align-items-center mb-2 mb-lg-0">
+
+          <!-- Secciones -->
+          <li class="nav-item"><a class="nav-link active" href="#top">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">Nosotros</a></li>
+          <li class="nav-item"><a class="nav-link" href="#menu">Menú</a></li>
+          <li class="nav-item"><a class="nav-link" href="#chefs">Chefs</a></li>
+          <li class="nav-item"><a class="nav-link" href="#reservation">Contáctanos</a></li>
+
+          <!-- Carrito -->
+          @auth
+          <li class="nav-item">
+            <a href="{{url('/showcart',Auth::user()->id)}}" class="nav-link">
+              <i class="fas fa-shopping-cart"></i> Carrito ({{$count}})
+            </a>
+          </li>
+          @else
+          <li class="nav-item">
+            <a href="{{ route('login') }}" class="nav-link">
+              <i class="fas fa-shopping-cart"></i> Carrito
+            </a>
+          </li>
+          @endauth
+
+          <!-- Login / Register -->
+          @if (Route::has('login'))
+          <li class="nav-item dropdown ms-lg-3">
+            @auth
+              <x-app-layout></x-app-layout>
+            @else
+              <a href="{{ route('login') }}" class="nav-link">Iniciar Sesión</a>
+              @if (Route::has('register'))
+                <a href="{{ route('register') }}" class="nav-link">Registrarse</a>
+              @endif
+            @endauth
+          </li>
+          @endif
+
+          <!-- Botón de tema -->
+          <li class="nav-item ms-lg-4">
+            <button id="theme-toggle" class="btn btn-outline-light rounded-circle">
+              <i id="theme-icon" class="fas fa-moon"></i>
+            </button>
+          </li>
+
+        </ul>
+      </div>
+
+    </div>
+  </nav>
+</header>
+<!-- ***** Header Area End ***** -->
+
 
     <!-- ***** Main Banner Area Start ***** -->
     <div id="top">
@@ -222,258 +206,47 @@ https://templatemo.com/tm-558-klassy-cafe
         </div>
     </section>
     <!-- ***** About Area Ends ***** -->
-
+<hr>
         <!-- INCLUIMOS LA AREA DE COMIDA -->
         @include("food")
+        <hr>
         <!-- INCLUIMOS LA AREA DE CHEFS -->
         @include("foodchef")
+ 
         <!-- INCLUIMOS LA AREA DE RESERVACIONES -->
          @include("reservation")
+   
     
 
-    <!-- ***** Menu Area Starts ***** -->
-    <section class="section" id="offers">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 offset-lg-4 text-center">
-                    <div class="section-heading">
-                        <h6>Semana elegante</h6>
-                        <h2>Ofertas especiales de comidas de esta semana</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="row" id="tabs">
-                        <div class="col-lg-12">
-                            <div class="heading-tabs">
-                                <div class="row">
-                                    <div class="col-lg-6 offset-lg-3">
-                                        <ul>
-                                          <li><a href='#tabs-1'><img src="assets/images/tab-icon-01.png" alt="">Breakfast</a></li>
-                                          <li><a href='#tabs-2'><img src="assets/images/tab-icon-02.png" alt="">Lunch</a></a></li>
-                                          <li><a href='#tabs-3'><img src="assets/images/tab-icon-03.png" alt="">Dinner</a></a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <section class='tabs-content'>
-                                <article id='tabs-1'>
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <div class="row">
-                                                <div class="left-list">
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-01.png" alt="">
-                                                            <h4>Fresh Chicken Salad</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$10.50</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>  
-                                <article id='tabs-2'>
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <div class="row">
-                                                <div class="left-list">
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-04.png" alt="">
-                                                            <h4>Eggs Omelette</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$14</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-05.png" alt="">
-                                                            <h4>Dollma Pire</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$18</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-06.png" alt="">
-                                                            <h4>Omelette & Cheese</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$22</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <div class="row">
-                                                <div class="right-list">
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-01.png" alt="">
-                                                            <h4>Fresh Chicken Salad</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$10</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-02.png" alt="">
-                                                            <h4>Orange Juice</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$20</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-03.png" alt="">
-                                                            <h4>Fruit Salad</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$30</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>  
-                                <article id='tabs-3'>
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <div class="row">
-                                                <div class="left-list">
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-05.png" alt="">
-                                                            <h4>Eggs Omelette</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$14</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-03.png" alt="">
-                                                            <h4>Orange Juice</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$18</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-02.png" alt="">
-                                                            <h4>Fruit Salad</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$10</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <div class="row">
-                                                <div class="right-list">
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-06.png" alt="">
-                                                            <h4>Fresh Chicken Salad</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$8.50</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-01.png" alt="">
-                                                            <h4>Dollma Pire</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$9</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="tab-item">
-                                                            <img src="assets/images/tab-item-04.png" alt="">
-                                                            <h4>Omelette & Cheese</h4>
-                                                            <p>Lorem ipsum dolor sit amet, consectetur koit adipiscing elit, sed do.</p>
-                                                            <div class="price">
-                                                                <h6>$11</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>   
-                            </section>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- ***** Comida de la semana ***** -->
+    @include("comidasemana")
+
     <!-- ***** Chefs Area Ends ***** --> 
     
-    <!-- ***** Footer Start ***** -->
     <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 col-xs-12">
-                    <div class="right-text-content">
-                            <ul class="social-icons">
-                                <li><a href="#"><i class="fa fa-facebook"></i></a></li>
-                                <li><a href="#"><i class="fa fa-twitter"></i></a></li>
-                                <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-                                <li><a href="#"><i class="fa fa-instagram"></i></a></li>
-                            </ul>
-                    </div>
-                </div>
-                <div class="col-lg-4" align="center" style="padding: 0px; ">
-                        <a href="/" class="logo">
-                            <img src="assets/images/logofoter.png" alt="Logo" height="110" width="160" >
-                        </a>
-                </div>
-                
-                <div class="col-lg-4 col-xs-12">
-                    <div class="left-text-content">
-                        <p>
-                            © Copyright Dalezius.
-                        
-                       </p>
-                       <p>All rights reserved</p>
-                    </div>
-                </div>
-            </div>
+    <div class="container">
+        <!-- Social Icons -->
+        <div class="right-text-content">
+            <ul class="social-icons">
+                <li><a href="https://www.facebook.com/"><i class="fab fa-facebook"></i></a></li>
+                <li><a href="https://x.com/home"><i class="fab fa-twitter"></i></a></li>
+                <li><a href="https://linkedin.com"><i class="fab fa-linkedin"></i></a></li>
+                <li><a href="https://www.instagram.com/"><i class="fab fa-instagram"></i></a></li>
+            </ul>
         </div>
-    </footer>
+
+        <!-- Logo -->
+        <div class="logo">
+            <a href="/"><img src="assets/images/logohorizontal.png" alt="Logo"></a>
+        </div>
+
+        <!-- Texto -->
+        <div class="left-text-content">
+            <p>© Copyright Dalezius. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
 
     <!-- jQuery -->
     <script src="assets/js/jquery-2.1.0.min.js"></script>
@@ -529,6 +302,25 @@ https://templatemo.com/tm-558-klassy-cafe
         });
     </script>
     
-    
+    <script>
+$(document).ready(function(){
+  $(".menu-carousel").owlCarousel({
+    items: 3,
+    margin: 25,
+    loop: true,
+    autoplay: true,
+    autoplayTimeout: 4000,
+    autoplayHoverPause: true,
+    smartSpeed: 600,
+    nav: true,
+    responsive:{
+      0:{ items:1 },
+      768:{ items:2 },
+      1200:{ items:3 }
+    }
+  });
+});
+</script>
+
   </body>
 </html>

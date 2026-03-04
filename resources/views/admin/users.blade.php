@@ -93,7 +93,7 @@
                     </tr>
                 </thead>
                 <tbody style="color: #fff">
-                    @foreach($data as $user)
+                    @foreach($users as $user)
                     <tr>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
@@ -170,7 +170,7 @@
                     <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ url('/storeUser') }}" method="POST">
+                <form action="{{ route('admin.tables.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">

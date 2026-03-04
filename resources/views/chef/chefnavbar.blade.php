@@ -41,7 +41,7 @@
           </a>
         </li>
         <li class="nav-item menu-items">
-          <a class="nav-link" href="{{url('chefprofile')}}">
+          <a class="nav-link" href="{{ route('admin.profile.index') }}">
             <span class="menu-icon">
               <i class="mdi mdi-table-large"></i>
             </span>

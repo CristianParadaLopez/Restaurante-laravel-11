@@ -1,0 +1,221 @@
+/* ---------------------------------------------------------
+   DALEZIUS RESTAURANTE DE LUJO
+   Estilo Apple x Lujo, tonos dorados y púrpuras profundos
+--------------------------------------------------------- */
+
+/* ======= FUENTES ======= */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:wght@400;500;600&display=swap');
+
+/* ======= VARIABLES ======= */
+:root {
+  --gold: #C6A15B;
+  --deep-purple: #2C1A4A;
+  --black: #0D0D0D;
+  --white: #FFFFFF;
+  --gray: #CFCFCF;
+  --font-title: 'Cinzel', serif;
+  --font-body: 'EB Garamond', serif;
+}
+
+/* ======= BASE ======= */
+body {
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+a:hover {
+  color: #d8b773;
+}
+
+
+/* ======= SECCIÓN DE COMIDAS ======= */
+#top {
+  padding: 120px 0;
+  
+}
+
+/* ======= TARJETAS ======= */
+.food-card {
+  position: relative;
+  background: var(--deep-purple);
+  background-image: url('../images/bg_derecha.jpg');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(198,161,91,0.25);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.food-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 0;
+}
+.food-card > * {
+  position: relative;
+  z-index: 1;
+}
+.food-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 45px rgba(198,161,91,0.25);
+}
+
+.food-card img {
+  height: 220px;
+  width: 100%;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(198,161,91,0.25);
+  transition: transform 0.5s ease;
+}
+.food-card:hover img {
+  transform: scale(1.05);
+}
+
+.food-card .card-body {
+  padding: 25px;
+  text-align: center;
+}
+.food-card .card-title {
+  color: var(--gold);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+.food-card .card-text {
+  color: #ccc;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+/* ======= BOTONES ======= */
+.btn {
+  border-radius: 40px;
+  font-family: var(--font-title);
+  transition: all 0.3s ease;
+}
+.btn-outline-dark {
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  background: transparent;
+}
+.btn-outline-dark:hover {
+  background: var(--gold);
+  color: var(--black);
+}
+.btn.add-to-cart {
+  background: linear-gradient(135deg, var(--gold), #d8b773);
+  color: var(--black);
+  font-weight: 600;
+}
+.btn.add-to-cart:hover {
+  box-shadow: 0 0 20px rgba(198,161,91,0.3);
+}
+
+/* ======= CANTIDAD ======= */
+.qty-btn {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  background: transparent;
+  transition: all 0.3s;
+}
+.qty-btn:hover {
+  background-color: var(--gold);
+  color: var(--black);
+}
+.qty-input {
+  font-size: 1.1rem !important;
+  border: 1px solid rgba(198,161,91,0.4) !important;
+  border-radius: 10px !important;
+  width: 70px !important;
+  text-align: center !important;
+}
+
+/* ======= FOOTER ======= */
+footer {
+  background: #150a2e;
+  padding: 50px 0;
+  border-top: 1px solid rgba(198,161,91,0.1);
+  text-align: center;
+}
+footer .social-icons a {
+  color: var(--gold);
+  margin: 0 8px;
+  font-size: 1.3rem;
+  transition: color 0.3s ease;
+}
+footer .social-icons a:hover {
+  color: #d8b773;
+}
+footer p {
+  color: #ccc;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+footer .logo img {
+  width: 200px;
+  margin: 15px 0;
+}
+
+#top h3 {
+  font-family: var(--font-title) !important;
+  font-size: 2.5rem !important;
+  color: var(--gold) !important;
+}
+
+/* ======= TOAST ======= */
+.toast-msg {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: var(--gold);
+  color: var(--black);
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 40px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease;
+  z-index: 9999;
+}
+.toast-msg.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 991px) {
+  .navbar-nav {
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .luxury-header .nav-link {
+    padding: 10px 0;
+    text-align: center;
+  }
+}
+@media (max-width: 768px) {
+  #top h3 {
+    font-size: 2rem;
+  }
+  .food-card {
+    margin-bottom: 25px;
+  }
+}

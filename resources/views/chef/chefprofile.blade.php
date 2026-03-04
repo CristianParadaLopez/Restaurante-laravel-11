@@ -18,18 +18,14 @@
             margin-top: 20px;
         }
         .card {
-            
             background-color: rgba(229, 2, 250, 0.144);
-  border: 2px solid #000000;
-  
-  border-radius: 5px;
+            border: 2px solid #000000;
+            border-radius: 5px;
             margin-top: 20px;
         }
-        .boton{
+        .boton {
             background: #9c49fb !important; 
             border-radius: 5px;
-            
-            
         }
     </style>
 </head>
@@ -38,24 +34,24 @@
         @include("chef.chefnavbar")
 
         <div class="content-wrapper">
-            @if($chef) <!-- Si el chef ya tiene un perfil -->
+           @if($chefProfile) <!-- Si el chef ya tiene un perfil -->
                 <div class="profile-container">
-                    @if($chef->image)
-                        <img src="/chefs/{{ $chef->image }}" alt="Imagen del Chef" class="profile-image">
+                    @if($chefProfile->image)
+                        <img src="/chefs/{{ $chefProfile->image }}" alt="Imagen del Chef" class="profile-image">
                     @else
                         <img src="/images/default-profile.png" alt="Imagen del Chef" class="profile-image">
                     @endif
-                    <h2 style="color: #9c49fb">{{ $chef->first_name }} {{ $chef->last_name }}</h2>
-                    <p style="color: #f3f3f3">Especialidad: {{ $chef->specialty }}</p>
+                    <h2 style="color: #9c49fb">{{ $chefProfile->first_name }} {{ $chefProfile->last_name }}</h2>
+                    <p style="color: #f3f3f3">Especialidad: {{ $chefProfile->specialty }}</p>
                 </div>
 
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Detalles del Perfil</h5>
-                        <p><strong>Descripción:</strong> {{ $chef->description }}</p>
-                        <p><strong>Área:</strong> {{ ucfirst($chef->area) }}</p>
-                        <p><strong>Fecha de creación:</strong> {{ $chef->created_at }}</p>
-                        <p><strong>Última actualización:</strong> {{ $chef->updated_at }}</p>
+                        <p><strong>Descripción:</strong> {{ $chefProfile->description }}</p>
+                        <p><strong>Área:</strong> {{ ucfirst($chefProfile->area) }}</p>
+                        <p><strong>Fecha de creación:</strong> {{ $chefProfile->created_at }}</p>
+                        <p><strong>Última actualización:</strong> {{ $chefProfile->updated_at }}</p>
 
                         <!-- Botón para editar -->
                         <form action="{{ route('chef.profile.edit') }}" method="GET" class="mt-3">
@@ -69,7 +65,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Crear Perfil de Chef</h5>
-                        <form method="POST" action="{{ route('chef.profile.store') }}" enctype="multipart/form-data">
+                        <form method="POST" action="{{ route('admin.profile.store') }}" enctype="multipart/form-data">
                             @csrf
                             <div class="form-group">
                                 <label for="first_name">Primer Nombre</label>
