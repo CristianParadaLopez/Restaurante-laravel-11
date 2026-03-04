@@ -35,24 +35,28 @@
 
   <!-- ***** Header Area Start ***** -->
   <header class="luxury-header fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark px-4 py-3">
-      <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container-fluid px-4">
 
         <!-- Logo -->
         <a href="@auth {{ url('/redirects') }} @else {{ url('/') }} @endauth" class="navbar-brand d-flex align-items-center">
-          <img src="assets/images/logo.png" alt="Dalezius" class="logo-img me-2">
+          <img src="assets/images/logo.png" alt="Dalezius" class="logo-img mr-2">
           <span class="brand-name">Dalezius</span>
         </a>
 
-        <!-- Botón toggle (modo móvil) -->
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-          aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <!-- Botón toggle mobile — Bootstrap 4: data-toggle / data-target -->
+        <button class="navbar-toggler" type="button"
+          data-toggle="collapse"
+          data-target="#navbarContent"
+          aria-controls="navbarContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <!-- Menú -->
         <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
-          <ul class="navbar-nav align-items-center gap-1 mb-2 mb-lg-0">
+          <ul class="navbar-nav align-items-lg-center mb-2 mb-lg-0">
 
             <li class="nav-item"><a class="nav-link active" href="#top">Inicio</a></li>
             <li class="nav-item"><a class="nav-link" href="#about">Nosotros</a></li>
@@ -60,11 +64,14 @@
             <li class="nav-item"><a class="nav-link" href="#chefs">Chefs</a></li>
             <li class="nav-item"><a class="nav-link" href="#reservation">Contáctanos</a></li>
 
+            <!-- Separador visual desktop -->
+            <li class="nav-item nav-separator d-none d-lg-block"></li>
+
             <!-- Carrito -->
             @auth
             <li class="nav-item">
               <a href="{{ url('/showcart', Auth::user()->id) }}" class="nav-link cart-link">
-                <i class="fas fa-shopping-cart me-1"></i>
+                <i class="fas fa-shopping-cart"></i>
                 <span class="cart-badge">{{ $count }}</span>
               </a>
             </li>
@@ -78,21 +85,25 @@
 
             <!-- Login / Register -->
             @if (Route::has('login'))
-            <li class="nav-item d-flex align-items-center ms-lg-2">
               @auth
-              <x-app-layout></x-app-layout>
+              <li class="nav-item">
+                <x-app-layout></x-app-layout>
+              </li>
               @else
-              <a href="{{ route('login') }}" class="btn-nav-outline me-2">Iniciar Sesión</a>
+              <li class="nav-item">
+                <a href="{{ route('login') }}" class="btn-nav-outline">Iniciar Sesión</a>
+              </li>
               @if (Route::has('register'))
-              <a href="{{ route('register') }}" class="btn-nav-gold">Registrarse</a>
+              <li class="nav-item">
+                <a href="{{ route('register') }}" class="btn-nav-gold">Registrarse</a>
+              </li>
               @endif
               @endauth
-            </li>
             @endif
 
             <!-- Botón de tema -->
-            <li class="nav-item ms-lg-2">
-              <button id="theme-toggle" class="btn btn-theme-toggle rounded-circle" aria-label="Cambiar tema">
+            <li class="nav-item">
+              <button id="theme-toggle" class="btn-theme-toggle" aria-label="Cambiar tema">
                 <i id="theme-icon" class="fas fa-moon"></i>
               </button>
             </li>
