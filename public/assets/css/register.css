@@ -100,8 +100,10 @@ body {
     transform: translateY(-1px);
 }
 
+.form-footer{color: #fff;}
 .form-footer a { color: #c6a15b; text-decoration: none; font-weight: 500; }
 .form-footer a:hover { color: #fff; }
+
 
 /* Panel decorativo derecho - Ajustado a Dorado/Negro */
 .auth-banner {
