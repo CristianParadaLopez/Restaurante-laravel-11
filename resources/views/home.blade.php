@@ -219,7 +219,7 @@
         </div>
 
         <div class="footer-copy">
-          <p>&copy; 2025 Dalezius. Todos los derechos reservados.</p>
+          <p>2025 Dalezius.</p>
         </div>
 
       </div>

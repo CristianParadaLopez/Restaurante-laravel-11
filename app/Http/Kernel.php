@@ -67,7 +67,6 @@ protected $middlewareAliases = [
     'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
     'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-    // 👇 usa tu propio middleware (no el de Spatie)
     'role' => \App\Http\Middleware\RoleMiddleware::class,
     'ensure.role' => \App\Http\Middleware\EnsureRole::class,
     'check.role' => \App\Http\Middleware\CheckRole::class,
