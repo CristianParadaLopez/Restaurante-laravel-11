@@ -30,7 +30,7 @@
 
     <!-- Ver todas las comidas -->
     <div class="text-center mt-5">
-      <a href="{{ route('comidaview') }}" class="btn-link big">Ver todas las comidas <i class="fa fa-angle-right"></i></a>
+      <a href="{{ route('menu') }}" class="btn-link big">Ver todas las comidas <i class="fa fa-angle-right"></i></a>
     </div>
 
   </div>

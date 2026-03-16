@@ -1,139 +1,79 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\FoodController as AdminFoodController;
-use App\Http\Controllers\Admin\TableController as AdminTableController;
-use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Admin\ChefController as AdminChefController;
-use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-
-use App\Http\Controllers\Chef\FoodController as ChefFoodController;
-use App\Http\Controllers\Chef\ProfileController as ChefProfileController;
-
-use App\Http\Controllers\Mesero\DashboardController as MeseroDashboardController;
-use App\Http\Controllers\Mesero\TableController as MeseroTableController;
-use App\Http\Controllers\Mesero\ReservationController as MeseroReservationController;
-
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\FoodController;
+use App\Http\Controllers\Admin\ChefController;
+use App\Http\Controllers\Admin\ChefProfileController;
+use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\Admin\ReservationController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController as CustomerOrderController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| RUTAS PÚBLICAS / HOME
-|--------------------------------------------------------------------------
-*/
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/redirects', [HomeController::class, 'redirects'])->middleware('auth')->name('redirects');
-Route::get('/comidaview', [HomeController::class, 'comidaview'])->name('comidaview');
-Route::get('/menu', [HomeController::class, 'comidaview'])->name('menu');
-Route::get('/infocomida/{food}', [HomeController::class, 'infocomida'])->name('infocomida');
+// ── Públicas ──────────────────────────────────────────────────
+Route::get('/',            [HomeController::class, 'index'])->name('home');
+Route::get('/menu',        [HomeController::class, 'comidaview'])->name('menu');
+Route::get('/menu/{food}', [HomeController::class, 'infocomida'])->name('infocomida');
 
-/*
-|--------------------------------------------------------------------------
-| RUTAS AUTH (CARRITO + ORDENES)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/{food}', [CartController::class, 'store'])->name('cart.store');
+// ── Autenticado (cliente) ──────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/redirects', [HomeController::class, 'redirects'])->name('redirects');
+
+    Route::get('/cart',           [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/{food}',   [CartController::class, 'store'])->name('cart.store');
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-    Route::post('/orderconfirm', [HomeController::class, 'orderConfirm'])->name('order.confirm');
+    Route::post('/order/confirm', [CustomerOrderController::class, 'confirm'])->name('order.confirm');
 });
 
-/*
-|--------------------------------------------------------------------------
-| RUTAS ADMIN PANEL UNIFICADO
-|--------------------------------------------------------------------------
-| Aquí todos los roles que pueden acceder al panel: admin, chef, mesero
-| Usamos RoleMiddleware mejorado que soporta múltiples roles
-|--------------------------------------------------------------------------
-*/
+// ── Panel unificado ────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')
-    ->middleware(['auth','role:admin,chef,mesero'])
+    ->middleware(['auth', 'role:admin,chef,mesero'])
     ->group(function () {
 
-    // Dashboard
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    // Dashboard — todos los roles
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN: Usuarios (solo admin)
-    |--------------------------------------------------------------------------
-    */
+    // ── Solo admin ──────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
-        Route::resource('users', AdminUserController::class)->except(['show'])->names('users');
-        Route::resource('chefs', AdminChefController::class)->names('chefs');
+        Route::resource('users',  UserController::class)->except('show')->names('users');
+        Route::resource('chefs',  ChefController::class)->names('chefs');
+        Route::resource('orders', OrderController::class)->only(['index','show'])->names('orders');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN / CHEF: Menus de comida
-    |--------------------------------------------------------------------------
-    */
+    // ── Admin + Chef ────────────────────────────────────────
     Route::middleware('role:admin,chef')->group(function () {
-        Route::resource('foods', AdminFoodController::class)->names('foods');
+        Route::resource('foods', FoodController::class)->names('foods');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | MESERO / ADMIN: Mesas
-    |--------------------------------------------------------------------------
-    */
+    // ── Solo Chef (su perfil) ────────────────────────────────
+    Route::middleware('role:chef')->group(function () {
+        Route::get('profile',       [ChefProfileController::class, 'index'])->name('profile.index');
+        Route::post('profile',      [ChefProfileController::class, 'store'])->name('profile.store');
+        Route::get('profile/edit',  [ChefProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile',       [ChefProfileController::class, 'update'])->name('profile.update');
+        Route::delete('profile',    [ChefProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+
+    // ── Admin + Mesero ───────────────────────────────────────
     Route::middleware('role:admin,mesero')->group(function () {
-        Route::resource('tables', AdminTableController::class)->names('tables');
-        Route::post('tables/{table}/mark-as-used', [AdminTableController::class, 'markAsUsed'])->name('tables.markAsUsed');
-    });
+        Route::resource('tables', TableController::class)->names('tables');
+        Route::post('tables/{table}/mark-as-used',
+            [TableController::class, 'markAsUsed'])->name('tables.markAsUsed');
 
-    /*
-    |--------------------------------------------------------------------------
-    | MESERO / ADMIN: Reservaciones
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('role:admin,mesero')->group(function () {
-        Route::get('reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
-        Route::post('reservations/{reservation}/assign-table', [AdminReservationController::class, 'assignTable'])->name('reservations.assignTable');
-        Route::delete('reservations/{reservation}', [AdminReservationController::class, 'destroy'])->name('reservations.destroy');
+        Route::get('reservations',
+            [ReservationController::class, 'index'])->name('reservations.index');
+        Route::post('reservations',
+            [ReservationController::class, 'store'])->name('reservations.store');
+        Route::post('reservations/{reservation}/assign-table',
+            [ReservationController::class, 'assignTable'])->name('reservations.assignTable');
+        Route::delete('reservations/{reservation}',
+            [ReservationController::class, 'destroy'])->name('reservations.destroy');
     });
-
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN: Ordenes
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('role:admin')->group(function () {
-        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
-        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | CHEF: Perfil propio
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('role:admin,chef')->group(function () {
-        Route::get('profile', [AdminProfileController::class, 'index'])->name('profile.index');
-        Route::post('profile', [AdminProfileController::class, 'store'])->name('profile.store');
-        Route::get('profile/edit', [AdminProfileController::class, 'edit'])->name('profile.edit');
-        Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
-        Route::delete('profile', [AdminProfileController::class, 'destroy'])->name('profile.destroy');
-    });
+    Route::fallback(function () {
+    return redirect()->route('home');
 });
-
-/*
-|--------------------------------------------------------------------------
-| DASHBOARD JETSTREAM / SANCTUM
-|--------------------------------------------------------------------------
-*/
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
 });

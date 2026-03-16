@@ -18,13 +18,15 @@ class DashboardController extends Controller
         $ordersCount = Order::count();
         $reservationsCount = Reservation::count();
         $tablesCount = Table::count();
+        $latestOrders = Order::latest()->take(5)->get();
 
         return view('admin.dashboard', compact(
             'usersCount',
             'foodsCount',
             'ordersCount',
             'reservationsCount',
-            'tablesCount'
+            'tablesCount',
+            'latestOrders'
         ));
     }
 }

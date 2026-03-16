@@ -1,208 +1,116 @@
-<x-app-layout>
-</x-app-layout>
+@extends('admin.layouts.admin')
+@section('title', 'Usuarios')
+@section('content')
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    @include("admin.admincss")
-    <style>
-        /* Estilos personalizados */
-        .user-table-container {
-            margin-top: 50px;
-            padding: 20px;
-            color: #ffffff !important;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .user-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .user-table th {
-            background-color: #9c49fb;
-            color: #ffffff !important;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .user-table td {
-            padding: 10px;
-            text-align: center;
-        }
-
-        .btn-action {
-            margin: 0 5px;
-        }
-
-        .btn-edit {
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .btn-edit:hover {
-            background-color: #218838;
-        }
-
-        .btn-delete {
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-
-        .btn-create {
-            background-color: #9c49fb;
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-            text-decoration: none;
-        }
-
-        .btn-create:hover {
-            background-color: #734e9e;
-            color: #fff;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-scroller">
-        @include("admin.navbar")
-
-        <div class="container user-table-container">
-            <h2 class="text-center mb-4">Gestión de Usuarios</h2>
-            <table class="table table-bordered user-table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody style="color: #fff">
-                    @foreach($users as $user)
-                    <tr>
-                        <td>{{ $user->name }}</td>
-                        <td>{{ $user->email }}</td>
-                        <td>{{ ucfirst($user->usertype) }}</td>
-                        <td>
-                            <!-- Botón para abrir el modal de editar usuario -->
-                            <button class="btn-edit btn-action" data-bs-toggle="modal" data-bs-target="#editUserModal-{{ $user->id }}" onclick="populateEditModal({{ $user->id }})">Editar</button>
-                            @if($user->usertype != "admin")
-                            <form action="{{ url('/deleteuser', $user->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-delete btn-action" onclick="return confirm('¿Seguro que deseas eliminar este usuario?')">Eliminar</button>
-                            </form>
-                            @else
-                            <span>No disponible</span>
-                            @endif
-                        </td>
-                    </tr>
-
-                    <!-- Modal para editar usuario -->
-                    <div class="modal fade" id="editUserModal-{{ $user->id }}" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <form action="{{ url('/updateUser', $user->id) }}" method="POST">
-                                    @csrf
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="name" class="form-label">Nombre</label>
-                                            <input type="text" class="form-control" id="name" name="name" value="{{ $user->name }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="email" class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="email" name="email" value="{{ $user->email }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="usertype" class="form-label">Rol</label>
-                                            <select class="form-select" id="usertype" name="usertype">
-                                                <option value="user" {{ $user->usertype == "user" ? "selected" : "" }}>Usuario</option>
-                                                <option value="chef" {{ $user->usertype == "chef" ? "selected" : "" }}>Chef</option>
-                                                <option value="waiter" {{ $user->usertype == "waiter" ? "selected" : "" }}>Mesero</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="password" class="form-label">Contraseña (si desea cambiarla)</label>
-                                            <input type="password" class="form-control" id="password" name="password">
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <!-- Botón para abrir el modal de crear usuario -->
-            <button class="btn-create" data-bs-toggle="modal" data-bs-target="#createUserModal">Crear Nuevo Usuario</button>
-        </div>
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+    <div>
+        <h1 style="font-size:20px; font-weight:500; color:var(--text); margin:0;">Gestión de Usuarios</h1>
+        <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">Administra los usuarios del sistema</p>
     </div>
+    <button class="btn-gold" data-bs-toggle="modal" data-bs-target="#createUserModal">
+        <i class="fas fa-plus" style="margin-right:6px;"></i>Nuevo Usuario
+    </button>
+</div>
 
-    <!-- Modal para crear usuario -->
-    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createUserModalLabel">Crear Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('admin.tables.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="usertype" class="form-label">Rol</label>
-                            <select class="form-select" id="usertype" name="usertype">
-                                <option value="user">Usuario</option>
-                                <option value="chef">Chef</option>
-                                <option value="waiter">Mesero</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
+<div class="stat-card" style="padding:0; overflow:hidden;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($users as $user)
+            <tr>
+                <td>{{ $user->name }}</td>
+                <td>{{ $user->email }}</td>
+                <td><span class="badge-status badge-pending">{{ ucfirst($user->usertype) }}</span></td>
+                <td style="display:flex; gap:8px;">
+                    <button class="btn-outline" style="padding:4px 10px; font-size:11px;"
+                        data-bs-toggle="modal" data-bs-target="#editUserModal-{{ $user->id }}">
+                        <i class="fas fa-pen"></i> Editar
+                    </button>
+                    @if($user->usertype != 'admin')
+                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="margin:0;">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn-outline" style="padding:4px 10px; font-size:11px; color:#fca5a5; border-color:rgba(239,68,68,0.3);"
+                            onclick="return confirm('¿Eliminar usuario?')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                    @endif
+                </td>
+            </tr>
+
+            {{-- Modal editar --}}
+            <div class="modal fade" id="editUserModal-{{ $user->id }}" tabindex="-1">
+                <div class="modal-dialog"><div class="modal-content admin-modal">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Usuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary">Crear Usuario</button>
-                    </div>
-                </form>
+                    <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
+                        @csrf @method('PUT')
+                        <div class="modal-body">
+                            <div class="admin-field"><label>Nombre</label>
+                                <input type="text" name="name" class="admin-input" value="{{ $user->name }}" required></div>
+                            <div class="admin-field"><label>Email</label>
+                                <input type="email" name="email" class="admin-input" value="{{ $user->email }}" required></div>
+                            <div class="admin-field"><label>Rol</label>
+                                <select name="usertype" class="admin-input">
+                                    <option value="user" {{ $user->usertype=='user'?'selected':'' }}>Usuario</option>
+                                    <option value="chef" {{ $user->usertype=='chef'?'selected':'' }}>Chef</option>
+                                    <option value="mesero" {{ $user->usertype=='mesero'?'selected':'' }}>Mesero</option>
+                                    <option value="admin" {{ $user->usertype=='admin'?'selected':'' }}>Admin</option>
+                                </select></div>
+                            <div class="admin-field"><label>Nueva Contraseña <span style="color:var(--muted)">(opcional)</span></label>
+                                <input type="password" name="password" class="admin-input"></div>
+                            <input type="hidden" name="password_confirmation" value="">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn-gold">Guardar</button>
+                        </div>
+                    </form>
+                </div></div>
             </div>
-        </div>
-    </div>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 
-    @include("admin.adminscript")
-</body>
-</html>
+{{-- Modal crear --}}
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content admin-modal">
+        <div class="modal-header">
+            <h5 class="modal-title">Nuevo Usuario</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form action="{{ route('admin.users.store') }}" method="POST">
+            @csrf
+            <div class="modal-body">
+                <div class="admin-field"><label>Nombre</label>
+                    <input type="text" name="name" class="admin-input" required></div>
+                <div class="admin-field"><label>Email</label>
+                    <input type="email" name="email" class="admin-input" required></div>
+                <div class="admin-field"><label>Rol</label>
+                    <select name="usertype" class="admin-input">
+                        <option value="user">Usuario</option>
+                        <option value="chef">Chef</option>
+                        <option value="mesero">Mesero</option>
+                        <option value="admin">Admin</option>
+                    </select></div>
+                <div class="admin-field"><label>Contraseña</label>
+                    <input type="password" name="password" class="admin-input" required></div>
+                <div class="admin-field"><label>Confirmar Contraseña</label>
+                    <input type="password" name="password_confirmation" class="admin-input" required></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn-gold">Crear Usuario</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+@endsection

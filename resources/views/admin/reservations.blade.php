@@ -1,306 +1,126 @@
-<x-app-layout>
-</x-app-layout>
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    @include("admin.admincss")
-    <style>
-      /* Estilo para la tabla */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 30px;
-      }
-      
-      th, td {
-        padding: 12px;
-        text-align: center;
-        border: 1px solid #ddd;
-      }
+@extends('admin.layouts.admin')
+@section('title', 'Reservaciones')
+@section('content')
 
-      th {
-        background-color: #f4f4f4;
-      }
-      .table-wrapper {
-  max-height: 500px;
-  overflow-y: auto;
-}
+<div style="margin-bottom:1.5rem;">
+    <h1 style="font-size:20px; font-weight:500; color:var(--text); margin:0;">Reservaciones</h1>
+    <p style="font-size:12px; color:var(--muted); margin:2px 0 0;">Gestiona y asigna mesas a reservaciones</p>
+</div>
 
-      .reservations-card, .tables-card {
-        cursor: pointer;        
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-        padding: 10px;
-      }
-
-      .reservations-card .card-body, .tables-card .card-body {
-        padding: 5px 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly;
-        height: 100%;
-        text-align: center;
-      }
-
-      .reservations-card h5, .tables-card h5 {
-        font-size: 1rem;
-        margin-bottom: 5px;
-      }
-
-      .reservations-card p, .tables-card p {
-        font-size: 0.9rem;
-        margin: 3px 0;
-      }
-
-      .tables-card {
-       background: #17a2b8
-        border: 2px solid #28a745;
-      }
-
-      .assigned-reservation {
-        background-color: #28a745;
-        color: white;
-      }
-
-      .not-assigned {
-        background-color: #dc3545;
-        color: white;
-      }
-
-      .tables-card:hover, .reservations-card:hover {
-        transform: translateY(-5px);
-      }
-
-      .tables-card.assigned-table {
-        background-color: #17a2b8;
-      }
-
-      .tables-card.available-table {
-        background-color: #28a745;
-      }
-
-      .tables-card.reserved-table {
-        background-color: #ffc107;
-        color: white;
-      }
-
-      .tables-card p {
-        margin: 0;
-      }
-
-      /* Nuevos estilos para las tarjetas de los usuarios */
-      .user-card {
-        background-color: #9c49fb;
-        cursor: pointer;
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 10px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .user-card.dragging {
-        opacity: 0.5;
-      }
-
-      .user-card.valid {
-        background-color: #28a745;
-      }
-
-      .user-card.invalid {
-        background-color: #dc3545;
-      }
-
-      .user-card p {
-        margin: 5px 0;
-      }
-
-    </style>
-  </head>
-  <body>
-    <div class="container-scroller">
-      @include("admin.navbar")
-
-      <div class="container mt-5">
-        <h3>Reservaciones</h3>
-        <!-- Mostrar las reservaciones en una tabla -->
-        <div class="table-wrapper">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Correo</th>
-              <th>Telefono</th>
-              <th>Invitados</th>
-              <th>Fecha</th>
-              <th>Hora</th>
-              <th>Mensaje</th>
-              <th>Mesa</th> 
-            </tr>
-          </thead>
-          <tbody>
+{{-- Tabla reservaciones --}}
+<div class="stat-card" style="padding:0; overflow:hidden; margin-bottom:1.5rem;">
+    <div style="padding:1rem 1.2rem; border-bottom:1px solid var(--border);">
+        <span style="font-size:13px; font-weight:500; color:var(--text);">Lista de Reservaciones</span>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr><th>Nombre</th><th>Teléfono</th><th>Invitados</th><th>Fecha</th><th>Hora</th><th>Mesa asignada</th></tr>
+        </thead>
+        <tbody>
             @foreach($reservations as $reservation)
-              <tr>
+            <tr>
                 <td>{{ $reservation->name }}</td>
-                <td>{{ $reservation->email }}</td>
                 <td>{{ $reservation->phone }}</td>
                 <td>{{ $reservation->guest }}</td>
                 <td>{{ $reservation->date }}</td>
                 <td>{{ $reservation->time }}</td>
-                <td>{{ $reservation->message }}</td>
                 <td>
-                  @if ($reservation->table_id)
-                    Nombre: {{ $reservation->table->name }} #{{ $reservation->table->number }} ubicación: {{ $reservation->table->type }}
-                  @else
-                    <span>No asignada</span>
-                  @endif
+                    @if($reservation->table_id)
+                        <span class="badge-status badge-done">{{ $reservation->table->name }} #{{ $reservation->table->number }}</span>
+                    @else
+                        <span class="badge-status badge-danger">Sin asignar</span>
+                    @endif
                 </td>
-              </tr>
+            </tr>
             @endforeach
-          </tbody>
-        </table>
-        </div>
+        </tbody>
+    </table>
+</div>
 
-        <h3>Mesas Disponibles</h3>
-        <!-- Mostrar mesas disponibles -->
-        <div class="row">
-          @foreach ($tables as $table)
-            @if ($table->status == 'disponible')
-              <div class="col-md-2 mb-2">
-                <div class="card border-success tables-card available-table" id="table-{{ $table->id }}" ondrop="drop(event)" ondragover="allowDrop(event)">
-                  <div class="card-body">
-                    <h5 class="card-title">Mesa #{{ $table->number }}</h5>
-                    <p class="card-text">Asientos: {{ $table->seats }}</p>
-                    <p class="card-text">Estado: {{ ucfirst($table->status) }}</p>
-                  </div>
-                </div>
-              </div>
+{{-- Asignar mesas por drag & drop --}}
+<div class="row" style="gap:1.5rem; display:grid; grid-template-columns:1fr 1fr;">
+
+    <div class="stat-card" style="padding:0; overflow:hidden;">
+        <div style="padding:1rem 1.2rem; border-bottom:1px solid var(--border);">
+            <span style="font-size:13px; font-weight:500; color:var(--text);">Mesas disponibles</span>
+        </div>
+        <div style="padding:1rem; display:flex; flex-wrap:wrap; gap:8px;">
+            @foreach($tables as $table)
+            @if($table->status == 'disponible')
+            <div class="mesa-card disponible" id="table-{{ $table->id }}"
+                ondrop="drop(event)" ondragover="allowDrop(event)"
+                style="background:var(--card); border:1px solid rgba(34,197,94,0.3); border-radius:8px; padding:10px 14px; cursor:pointer; min-width:120px;">
+                <div style="font-size:12px; font-weight:500; color:var(--text);">Mesa #{{ $table->number }}</div>
+                <div style="font-size:11px; color:var(--muted);">{{ $table->seats }} asientos</div>
+                <div style="font-size:10px; color:#6ee7a0; margin-top:4px;">Disponible</div>
+            </div>
             @elseif($table->status == 'reservada')
-              <div class="col-md-2 mb-2">
-                <div class="card border-warning tables-card reserved-table">
-                  <div class="card-body">
-                    <h5 class="card-title">Mesa #{{ $table->number }}</h5>
-                    <p class="card-text">Asientos: {{ $table->seats }}</p>
-                    <p class="card-text">Estado: {{ ucfirst($table->status) }}</p>
-                  </div>
-                </div>
-              </div>
+            <div style="background:var(--card); border:1px solid rgba(198,161,91,0.3); border-radius:8px; padding:10px 14px; min-width:120px;">
+                <div style="font-size:12px; font-weight:500; color:var(--text);">Mesa #{{ $table->number }}</div>
+                <div style="font-size:11px; color:var(--muted);">{{ $table->seats }} asientos</div>
+                <div style="font-size:10px; color:var(--gold); margin-top:4px;">Reservada</div>
+            </div>
             @endif
-          @endforeach
+            @endforeach
         </div>
-
-        <h3>Asignar reservacion</h3>
-        <div class="row">
-          @foreach ($reservations as $reservation)
-            @if (!$reservation->table_id)
-              <div class="col-md-3 mb-e">
-                <div class="card user-card" id="user-{{ $reservation->id }}" draggable="true" ondragstart="drag(event)">
-                  <div class="card-body">
-                    <h5 class="card-title">{{ $reservation->name }}</h5>
-                    <p>Invitados: {{ $reservation->guest }}</p>
-                    <p>Fecha: {{ $reservation->date }}</p>
-                    <p>Hora: {{ $reservation->time }}</p>
-                    <p>Mensaje: {{ $reservation->message }}</p>
-                  </div>
-                </div>
-              </div>
-            @endif
-          @endforeach
-        </div>
-      </div>
     </div>
 
-    @include("admin.adminscript")
+    <div class="stat-card" style="padding:0; overflow:hidden;">
+        <div style="padding:1rem 1.2rem; border-bottom:1px solid var(--border);">
+            <span style="font-size:13px; font-weight:500; color:var(--text);">Sin asignar — arrastra a una mesa</span>
+        </div>
+        <div style="padding:1rem; display:flex; flex-wrap:wrap; gap:8px;">
+            @foreach($reservations as $reservation)
+            @if(!$reservation->table_id)
+            <div id="user-{{ $reservation->id }}" draggable="true" ondragstart="drag(event)"
+                style="background:rgba(198,161,91,0.1); border:1px solid var(--gold-border); border-radius:8px; padding:10px 14px; cursor:grab; min-width:140px;">
+                <div style="font-size:12px; font-weight:500; color:var(--text);">{{ $reservation->name }}</div>
+                <div style="font-size:11px; color:var(--muted);">{{ $reservation->guest }} invitados</div>
+                <div style="font-size:10px; color:var(--gold); margin-top:2px;">{{ $reservation->date }}</div>
+            </div>
+            @endif
+            @endforeach
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</div>
 
-  <script>
-  let draggedUser = null;
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let draggedUser = null;
 
-  function allowDrop(ev) {
+function allowDrop(ev) { ev.preventDefault(); }
+
+function drag(ev) {
+    draggedUser = ev.target.closest('[draggable]');
+}
+
+function drop(ev) {
     ev.preventDefault();
-  }
+    const tableCard = ev.target.closest('.mesa-card');
+    if (!tableCard || !draggedUser) return;
 
-  function drag(ev) {
-    draggedUser = ev.target;
-    draggedUser.classList.add('dragging');
-  }
+    const tableId = tableCard.id.split('-')[1];
+    const userId  = draggedUser.id.split('-')[1];
 
-  function drop(ev) {
-    ev.preventDefault();
-
-    const table = ev.target.closest('.tables-card');
-    if (!table || !draggedUser) return;
-
-    const tableId = table.id.split('-')[1];
-    const userId = draggedUser.id.split('-')[1];
-
-    const tableSeatsText = table.querySelector('.card-body p:nth-child(2)').textContent;
-    const userGuestsText = draggedUser.querySelector('p:first-of-type').textContent;
-
-    // Extraer números (en caso que tengan "Asientos: X" o "Invitados: X")
-    const tableSeats = parseInt(tableSeatsText.replace(/\D/g, ''));
-    const userGuests = parseInt(userGuestsText.replace(/\D/g, ''));
-
-    if (isNaN(tableSeats) || isNaN(userGuests)) {
-      Swal.fire({
-        title: 'Error',
-        text: 'No se pudieron leer los datos de asientos o invitados.',
-        icon: 'error',
-        confirmButtonText: 'Intentar nuevamente'
-      });
-      return;
-    }
-
-    if (tableSeats !== userGuests) {
-      Swal.fire({
-        title: 'Error',
-        text: `La mesa tiene ${tableSeats} asientos y la reservación es para ${userGuests} invitados.`,
-        icon: 'error',
-        confirmButtonText: 'Intentar nuevamente'
-      });
-      return;
-    }
-
-    // Si todo coincide, enviar la petición al backend
     fetch(`/admin/reservations/${userId}/assign-table`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-      },
-      body: JSON.stringify({ table_id: tableId })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ table_id: tableId })
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-      if (data.success) {
-        Swal.fire({
-          title: 'Éxito',
-          text: `Mesa asignada a ${data.user_name}.`,
-          icon: 'success',
-          confirmButtonText: 'OK'
-        }).then(() => location.reload());
-      } else {
-        Swal.fire({
-          title: 'Error',
-          text: data.message || 'No se pudo asignar la mesa.',
-          icon: 'error',
-          confirmButtonText: 'Intentar nuevamente'
-        });
-      }
-    })
-    .catch(error => {
-      Swal.fire({
-        title: 'Error',
-        text: 'Hubo un error al asignar la mesa.',
-        icon: 'error',
-        confirmButtonText: 'Intentar nuevamente'
-      });
+        if (data.success) {
+            Swal.fire({ title: 'Mesa asignada', text: `Mesa asignada a ${data.user_name}`,
+                icon: 'success', background: '#1a1a1a', color: '#e8e8e8', confirmButtonColor: '#c6a15b' })
+            .then(() => location.reload());
+        } else {
+            Swal.fire({ title: 'Error', text: data.message, icon: 'error',
+                background: '#1a1a1a', color: '#e8e8e8', confirmButtonColor: '#c6a15b' });
+        }
     });
-  }
+}
 </script>
-
-
-  </body>
-</html>
+@endpush
+@endsection
